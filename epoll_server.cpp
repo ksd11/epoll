@@ -3,35 +3,35 @@
 
 int main(int argc, char *argv[])
 {
-    //·şÎñÆ÷IP + port
+    //æœåŠ¡å™¨IP + port
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = PF_INET;
     serverAddr.sin_port = htons(SERVER_PORT);
     serverAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
-    //´´½¨¼àÌısocket
+    //åˆ›å»ºç›‘å¬socket
     int listener = socket(PF_INET, SOCK_STREAM, 0);
     if(listener < 0) { perror("listener"); exit(-1);}
     printf("listen socket created \n");
-    //°ó¶¨µØÖ·
+    //ç»‘å®šåœ°å€
     if( bind(listener, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
         perror("bind error");
         exit(-1);
     }
-    //¼àÌı
+    //ç›‘å¬
     int ret = listen(listener, 5);
     if(ret < 0) { perror("listen error"); exit(-1);}
     printf("Start to listen: %s\n", SERVER_IP);
-    //ÔÚÄÚºËÖĞ´´½¨ÊÂ¼ş±í
+    //åœ¨å†…æ ¸ä¸­åˆ›å»ºäº‹ä»¶è¡¨
     int epfd = epoll_create(EPOLL_SIZE);
     if(epfd < 0) { perror("epfd error"); exit(-1);}
     printf("epoll created, epollfd = %d\n", epfd);
     static struct epoll_event events[EPOLL_SIZE];
-    //ÍùÄÚºËÊÂ¼ş±íÀïÌí¼ÓÊÂ¼ş
+    //å¾€å†…æ ¸äº‹ä»¶è¡¨é‡Œæ·»åŠ äº‹ä»¶
     addfd(epfd, listener, true);
-    //Ö÷Ñ­»·
+    //ä¸»å¾ªç¯
     while(1)
     {
-        //epoll_events_count±íÊ¾¾ÍĞ÷ÊÂ¼şµÄÊıÄ¿
+        //epoll_events_countè¡¨ç¤ºå°±ç»ªäº‹ä»¶çš„æ•°ç›®
         int epoll_events_count = epoll_wait(epfd, events, EPOLL_SIZE, -1);
         if(epoll_events_count < 0) {
             perror("epoll failure");
@@ -39,11 +39,11 @@ int main(int argc, char *argv[])
         }
 
         printf("epoll_events_count = %d\n", epoll_events_count);
-        //´¦ÀíÕâepoll_events_count¸ö¾ÍĞ÷ÊÂ¼ş
+        //å¤„ç†è¿™epoll_events_countä¸ªå°±ç»ªäº‹ä»¶
         for(int i = 0; i < epoll_events_count; ++i)
         {
             int sockfd = events[i].data.fd;
-            //ĞÂÓÃ»§Á¬½Ó
+            //æ–°ç”¨æˆ·è¿æ¥
             if(sockfd == listener)
             {
                 struct sockaddr_in client_address;
@@ -55,14 +55,14 @@ int main(int argc, char *argv[])
                 ntohs(client_address.sin_port),
                 clientfd);
 
-                addfd(epfd, clientfd, true);////°ÑÕâ¸öĞÂµÄ¿Í»§¶ËÌí¼Óµ½ÄÚºËÊÂ¼şÁĞ±í
+                addfd(epfd, clientfd, true);////æŠŠè¿™ä¸ªæ–°çš„å®¢æˆ·ç«¯æ·»åŠ åˆ°å†…æ ¸äº‹ä»¶åˆ—è¡¨
 
-                // ·şÎñ¶ËÓÃlist±£´æÓÃ»§Á¬½Ó
+                // æœåŠ¡ç«¯ç”¨listä¿å­˜ç”¨æˆ·è¿æ¥
                 clients_list.push_back(clientfd);
                 printf("Add new clientfd = %d to epoll\n", clientfd);
                 printf("Now there are %d clients int the chat room\n", (int)clients_list.size());
 
-                // ·şÎñ¶Ë·¢ËÍ»¶Ó­ĞÅÏ¢
+                // æœåŠ¡ç«¯å‘é€æ¬¢è¿ä¿¡æ¯
                 printf("welcome message\n");
                 char message[BUF_SIZE];
                 bzero(message, BUF_SIZE);
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
                 int ret = send(clientfd, message, BUF_SIZE, 0);
                 if(ret < 0) { perror("send error"); exit(-1); }
             }
-            //¿Í»§¶Ë»½ĞÑ//´¦ÀíÓÃ»§·¢À´µÄÏûÏ¢£¬²¢¹ã²¥£¬Ê¹ÆäËûÓÃ»§ÊÕµ½ĞÅÏ¢
+            //å®¢æˆ·ç«¯å”¤é†’//å¤„ç†ç”¨æˆ·å‘æ¥çš„æ¶ˆæ¯ï¼Œå¹¶å¹¿æ’­ï¼Œä½¿å…¶ä»–ç”¨æˆ·æ”¶åˆ°ä¿¡æ¯
             else
             {
                 int ret = sendBroadcastmessage(sockfd);
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
             }
         }
     }
-    close(listener); //¹Ø±Õsocket
-    close(epfd);    //¹Ø±ÕÄÚºË   ²»ÔÚ¼à¿ØÕâĞ©×¢²áÊÂ¼şÊÇ·ñ·¢Éú
+    close(listener); //å…³é—­socket
+    close(epfd);    //å…³é—­å†…æ ¸   ä¸åœ¨ç›‘æ§è¿™äº›æ³¨å†Œäº‹ä»¶æ˜¯å¦å‘ç”Ÿ
     return 0;
 }
